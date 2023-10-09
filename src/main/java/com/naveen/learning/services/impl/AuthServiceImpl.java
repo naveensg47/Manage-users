@@ -11,6 +11,7 @@ import com.naveen.learning.services.AuthService;
 import com.naveen.learning.services.PasswordResetTokenService;
 import com.naveen.learning.services.RefreshTokenService;
 import com.naveen.learning.services.UserService;
+import com.naveen.learning.utils.constant.ErrorConstants;
 import com.naveen.learning.utils.error.ErrorCodeHelper;
 import com.naveen.learning.utils.error.response.ErrorInfo;
 import com.naveen.learning.utils.error.response.ServiceException;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -64,20 +66,20 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userMail, password));
-        } catch (Exception e) {
-            e.printStackTrace();
-            ErrorInfo errorInfo = new ErrorCodeHelper().getErrorInfo("E1005", "Authentication Failed");
+        } catch (BadCredentialsException e) {
+            //e.printStackTrace();
+            logger.error("Authentication Failed");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1004_ERROR_CODE,ErrorConstants.E1004_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo, HttpStatus.FORBIDDEN);
         }
-        System.out.println("Authenticated");
+        logger.info("User Authenticated");
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        System.out.println("CustomerDetails...............");
         logger.info("User logged in is : " + customUserDetails.getUsername());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        System.out.println("Fkjnknk");
         RefreshToken refreshToken = createAndPersistRefreshToken(user.get(), userMail, password);
         if (refreshToken == null) {
-            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo("E1008", "Failed to create a refresh token");
+            logger.error("Failed to create a refresh token");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1010_ERROR_CODE,ErrorConstants.E1010_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo,HttpStatus.OK);
         }
         String jwtToken = jwtTokenProvider.generateToken(customUserDetails);
@@ -100,7 +102,8 @@ public class AuthServiceImpl implements AuthService {
     public PasswordResetToken resetPasswordToken(String email) {
         Optional<User> user = userService.findByEmail(email);
         if (!user.isPresent()) {
-            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo("E1009", "Email doesn't exist");
+            logger.error("Email doesn't exist");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1005_ERROR_CODE,ErrorConstants.E1005_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo, HttpStatus.NOT_FOUND);
         }
         PasswordResetToken passwordResetToken = passwordResetTokenService.createResetToken(user.get());

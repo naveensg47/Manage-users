@@ -1,5 +1,6 @@
 package com.naveen.learning.controller;
 
+import com.naveen.learning.dto.request.LoginRequest;
 import com.naveen.learning.dto.request.PasswordRequestToken;
 import com.naveen.learning.dto.response.TokenResponse;
 import com.naveen.learning.event.OnPasswordResetLinkEvent;
@@ -28,7 +29,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("auth/v1")
+@RequestMapping("auth/v1/")
 public class AuthController {
 
     private static final Logger logger = Logger.getLogger(AuthController.class);
@@ -46,11 +47,11 @@ public class AuthController {
     private ApplicationEventPublisher applicationEventPublisher;
 
     //Authenticate User
-    @GetMapping(value = CommonConstants.LOGIN)
+    @PostMapping(value = CommonConstants.LOGIN)
     @ApiOperation(value = "User logs in and get the authentication token in return")
-    public ResponseJson authenticateUser(@RequestParam String userEmail, @RequestParam String password) {
+    public ResponseJson authenticateUser( @Valid @RequestBody LoginRequest loginRequest ) {
         response.setResponseDescription(CommonConstants.S0001_SUCCESS_DESCRIPTION);
-        response.setResponse(authService.authenticateUser(userEmail, password));
+        response.setResponse(authService.authenticateUser(loginRequest.getEmail(), loginRequest.getEmail()));
         return response;
     }
 
@@ -59,7 +60,7 @@ public class AuthController {
     public ResponseJson sendResetPasswordLink(@RequestParam @Valid String email) {
         //create a token and send it through email
         PasswordResetToken passwordResetToken = authService.resetPasswordToken(email);
-        UriComponentsBuilder redirectUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/password/reset");
+        UriComponentsBuilder redirectUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/auth/v1/password/reset");
         applicationEventPublisher.publishEvent(new OnPasswordResetLinkEvent(passwordResetToken, redirectUrl));
 
         response.setResponseDescription(CommonConstants.S0001_SUCCESS_DESCRIPTION);
@@ -79,7 +80,7 @@ public class AuthController {
     }
 
     //generate Jwt Token using refresh token if existing token expires
-    @GetMapping(value = "/token/refresh")
+    @GetMapping(value = "token/refresh")
     public ResponseJson refreshJwtToken(@RequestParam String refreshToken) {
         String token = authService.refreshJwtToken(refreshToken);
         response.setResponseDescription(CommonConstants.S0001_SUCCESS_DESCRIPTION);

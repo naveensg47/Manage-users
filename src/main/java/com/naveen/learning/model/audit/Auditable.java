@@ -15,6 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
 import java.sql.Timestamp;
 
 //Super class that every auditable entity class should inherit
@@ -23,7 +24,7 @@ import java.sql.Timestamp;
 @Audited
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class Auditable {
+public abstract class Auditable {
 
     private static final long serialVersionUID = 5060095263304754297L;
 
@@ -46,6 +47,12 @@ public class Auditable {
     @LastModifiedBy
     @Column(name = "modified_by")
     private String modifiedBy;
+
+    @PrePersist
+    public void prePersist(){
+        this.modifiedBy=null;
+        this.modifiedOn=null;
+    }
 
     @Override
     public boolean equals(Object obj) {

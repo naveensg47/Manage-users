@@ -5,6 +5,7 @@ import com.naveen.learning.dto.request.PasswordRequestToken;
 import com.naveen.learning.model.PasswordResetToken;
 import com.naveen.learning.model.User;
 import com.naveen.learning.services.PasswordResetTokenService;
+import com.naveen.learning.utils.constant.ErrorConstants;
 import com.naveen.learning.utils.error.ErrorCodeHelper;
 import com.naveen.learning.utils.error.response.ErrorInfo;
 import com.naveen.learning.utils.error.response.ServiceException;
@@ -32,7 +33,6 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     @Override
     public PasswordResetToken createResetToken(User user) {
-
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setUser(user);
         resetToken.setActive(true);
@@ -47,7 +47,8 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     public PasswordResetToken getValidResetToken(PasswordRequestToken requestToken) {
         PasswordResetToken passwordResetToken = passwordResetTokenDao.findByToken(requestToken.getToken());
         if (passwordResetToken == null) {
-            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo("E1011", "Password Reset Token Not Found");
+            logger.error("Password Reset Token Not Found");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1006_ERROR_CODE,ErrorConstants.E1006_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo, HttpStatus.NOT_FOUND);
         }
         matchEmail(passwordResetToken, requestToken.getEmail());
@@ -55,6 +56,10 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         return passwordResetToken;
     }
 
+    /**
+     * Mark this reset password token as claimed (Used by user to update password)
+     *
+     */
     @Override
     public PasswordResetToken claimToken(PasswordResetToken passwordResetToken) {
         User user = passwordResetToken.getUser();
@@ -65,20 +70,21 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     public void matchEmail(PasswordResetToken resetToken, String requestEmail) {
         if (!resetToken.getUser().getEmail().equalsIgnoreCase(requestEmail)) {
-            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo("E2001", "Password Reset Token is Invalid for User");
+            logger.error("Password Reset Token is Invalid for User");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1007_ERROR_CODE,ErrorConstants.E1007_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo, HttpStatus.NOT_FOUND);
         }
     }
 
     public void verifyExpiration(PasswordResetToken token) {
         if (token.getExpiryDate().isAfter(Instant.now())) {
-            logger.info("Token has expired");
-            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo("E2002", "Token has Expired");
+            logger.error("Password Reset Token has expired");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1008_ERROR_CODE,ErrorConstants.E1008_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo, HttpStatus.OK);
         }
         if (!token.isActive()) {
-            logger.info("Token in Inactive");
-            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo("E2002", "Token is marked as Inactive");
+            logger.error("Token in Inactive");
+            ErrorInfo errorInfo = errorCodeHelper.getErrorInfo(ErrorConstants.E1009_ERROR_CODE,ErrorConstants.E1009_ERROR_DESCRIPTION);
             throw new ServiceException(errorInfo, HttpStatus.OK);
         }
     }

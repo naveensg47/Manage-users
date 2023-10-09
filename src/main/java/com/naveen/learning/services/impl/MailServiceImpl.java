@@ -36,7 +36,7 @@ public class MailServiceImpl implements MailService {
     @Value("${app.velocity.templates.location}")
     private String templatePath;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username.from}")
     private String mailFrom;
 
     @Value("${app.reset.password.token.duration}")

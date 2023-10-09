@@ -18,6 +18,8 @@
 		<spring.boot.version>2.7.14</spring.boot.version>
 		<swagger.version>2.9.2</swagger.version>
 		<freemarker.version>2.3.28</freemarker.version>
+		<commons.lang3>3.7</commons.lang3>
+
 	</properties>
 	<dependencies>
 		<dependency>
@@ -69,6 +71,12 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons.lang3}</version>
 		</dependency>
 
 		<!--Spring Mail -->

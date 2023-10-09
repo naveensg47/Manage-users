@@ -6,8 +6,8 @@ import com.naveen.learning.dao.UserDao;
 import com.naveen.learning.dto.response.UserDto;
 import com.naveen.learning.model.Role;
 import com.naveen.learning.model.User;
-import com.naveen.learning.model.UserRole;
 import com.naveen.learning.services.UserService;
+import com.naveen.learning.utils.ValidationUtils;
 import com.naveen.learning.utils.constant.ErrorConstants;
 import com.naveen.learning.utils.error.ErrorCodeHelper;
 import com.naveen.learning.utils.error.response.ErrorInfo;
@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto addUser(UserDto userDto) {
+        validateUserDto(userDto);
         User user = new User();
         Optional<User> optionalUser = userDao.findByEmail(userDto.getEmail());
         if (optionalUser.isPresent()) {
@@ -56,6 +56,11 @@ public class UserServiceImpl implements UserService {
         user.setEmailVerified(true);
         user.setRoles(new HashSet<>());
         return addOrUpdateUser(userDto, user);
+    }
+
+    private void validateUserDto(UserDto userDto){
+        ValidationUtils.validateEmail(userDto.getEmail());
+        ValidationUtils.validateUserPassword(userDto.getPassword());
     }
 
     @Override

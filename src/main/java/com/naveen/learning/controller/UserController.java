@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("user")
+@RequestMapping("user/v1/")
 public class UserController {
 
     @Autowired
@@ -25,18 +25,15 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private ValidationUtils validationUtils;
-
     @GetMapping(value = CommonConstants.TOKEN)
     public ResponseJson createToken(@RequestParam String userMail, @RequestParam String password) {
-        validationUtils.validateEmail(userMail);
+        ValidationUtils.validateEmail(userMail);
         return null;
     }
 
     @PostMapping(value = CommonConstants.ADD_USER)
     public ResponseJson createUser(@Valid @RequestBody UserDto userDto) {
-        validationUtils.validateEmail(userDto.getEmail());
+        ValidationUtils.validateEmail(userDto.getEmail());
         response.setResponseDescription(CommonConstants.S0001_SUCCESS_DESCRIPTION);
         response.setResponse(userService.addUser(userDto));
         return response;

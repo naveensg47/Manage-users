@@ -1,6 +1,6 @@
 package com.naveen.learning.config;
 
-import com.naveen.learning.model.audit.SecurityAuditorAware;
+import com.naveen.learning.model.audit.AuditorAwareImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -12,6 +12,6 @@ public class AuditConfiguration {
 
     @Bean
     AuditorAware<String> auditorProvider() {
-        return new SecurityAuditorAware();
+        return new AuditorAwareImpl();
     }
 }
